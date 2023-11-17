@@ -1,0 +1,110 @@
+﻿﻿<div class="card">
+    <div class="card-header">
+        <h2>CDN Users</h2>  
+    </div>
+    <div class="card-body">
+        <div class="card-title">
+            <a asp-controller="user" asp-action="create" class="btn btn-success">Add New User</a>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <table class="table table-bordered" id="tblUser">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Skillset</th>
+                            <th>Hobby</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+@* <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script> *@
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+
+    var js = jQuery.noConflict(true);
+    js(document).ready(function () {
+        //get user list from api
+        LoadCustomer()
+    });
+
+    function LoadCustomer() {
+        tabledata = [];
+        $.ajax({
+            type: 'GET',
+            url: 'https://localhost:7285/api/User/Get',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                debugger;
+                $.each(data, function (key, value) {
+                    var _edit = "<a class='btn btn-primary' onclick='FunEdit(this)'>Edit</a>";
+                    var _remove = "<a class='btn btn-danger' onclick='FunRemove(this)'>Remove</a>";
+                    var _hdn = "<input id='hdncode' type='hidden' value=" + value.id + " />"
+                    var _action = _hdn + _edit + " | " + _remove;                 
+                    tabledata.push([value.id, value.userName, value.mail, value.phoneNumber, value.skillSet, value.hobby, _action]);
+                })
+            },
+            failure: function (error) {
+                console.log(error);
+            }
+        })
+        js('#tblUser').DataTable({
+            data: tabledata
+        })
+    }
+    function FunEdit(element) {
+        var code = $(element).closest('tr').find('#hdncode').val();
+        //address from the url 
+        window.location.href = '/User/Edit/?code=' + code
+    }
+
+    function FunRemove(element) {
+        var code = $(element).closest('tr').find('#hdncode').val();
+        if (confirm('Do you want to remove?')) {
+            //Delete user info from database
+            proceedremove(code);
+        }
+    }
+
+    function proceedremove(code) {   
+        $.ajax({
+            type: 'DELETE',
+            url: 'https://localhost:7285/api/User/Delete/'+ code,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+                debugger;
+                if (data.responseCode == 200) {
+                    window.location.href = '/User';
+                    alert('Removed Successfully.');
+                } else {
+                    alert('Failed to Remove');
+                }
+            },
+            failure: function (error) {
+
+            }
+        })
+    }
+
+
+</script>
